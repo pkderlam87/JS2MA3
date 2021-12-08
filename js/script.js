@@ -1,5 +1,6 @@
 import displayMessage from "./components/displayMessage.js";
 import { baseUrl } from "./settings/api.js";
+import { saveToken, saveUser } from "./utils/storage.js";
 
 const form = document.querySelector("form");
 const userEmail = document.querySelector("#email");
@@ -47,9 +48,7 @@ function checkLength(passValue, minlen, maxlen) {
 }
 async function doLogin(username, password) {
     const url = baseUrl + "api/auth/local";
-    console.log(url);
     const data = JSON.stringify({ identifier: username, password: password });
-    console.log(data);
     const options = {
         method: "POST",
         body: data,
@@ -57,13 +56,14 @@ async function doLogin(username, password) {
             "Content-Type": "application/json",
         },
     };
-    console.log(options);
     try {
         const response = await fetch(url, options);
         const json = await response.json();
-        console.log(json);
         if (json.user) {
-            displayMessage("success", "Successfully logged in", ".messageContainer");
+            saveToken(json.jwt);
+            saveUser(json.user);
+
+            location.href = "https://pkderlam.one/portfolio";
         }
 
         if (json.error) {
@@ -71,5 +71,6 @@ async function doLogin(username, password) {
         }
     } catch (error) {
         console.log(error);
+        displayMessage("warning", error, ".messageContainer");
     }
 }
